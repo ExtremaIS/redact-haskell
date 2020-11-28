@@ -1,0 +1,56 @@
+name:           redact
+version:        0.0.1.0
+category:       Utils
+synopsis:       hide secret text on the terminal
+description:
+  This package provides a utility for redacting secret text on the terminal.
+  Please see the README on GitHub at
+  <https://github.com/ExtremaIS/redact-haskell#readme>.
+
+homepage:       https://github.com/ExtremaIS/redact-haskell#readme
+bug-reports:    https://github.com/ExtremaIS/redact-haskell/issues
+author:         Travis Cardwell <travis.cardwell@extrema.is>
+maintainer:     Travis Cardwell <travis.cardwell@extrema.is>
+copyright:      Copyright (c) 2020 Travis Cardwell
+license:        MIT
+license-file:   LICENSE
+
+cabal-version:  >=1.10
+build-type:     Simple
+tested-with:
+  GHC ==8.2.2
+   || ==8.4.4
+   || ==8.6.5
+   || ==8.8.4
+   || ==8.10.2
+
+extra-source-files:
+  CHANGELOG.md
+  README.md
+
+source-repository head
+  type: git
+  location: https://github.com/ExtremaIS/redact-haskell.git
+
+executable redact
+  main-is: redact.hs
+  other-modules:
+      LibOA
+    , Paths_redact
+  build-depends:
+      ansi-terminal >=0.8 && <0.12
+    , ansi-wl-pprint >=0.6 && <0.7
+    , base >=4.7 && <5
+    , directory >=1.3 && <1.4
+    , optparse-applicative >=0.14 && <0.16
+  default-language: Haskell2010
+  ghc-options: -Wall
+
+test-suite redact-test
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Spec.hs
+  build-depends:
+      base
+  default-language: Haskell2010
+  ghc-options: -Wall
