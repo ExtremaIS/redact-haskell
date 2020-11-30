@@ -200,6 +200,11 @@ test-all: # run tests for all versions
 >   || make test RESOLVER=nightly
 .PHONY: test-all
 
+test-nightly: # run tests for the latest Stackage nightly release
+> @command -v hr >/dev/null 2>&1 && hr nightly || true
+> @make test RESOLVER=nightly
+.PHONY: test-nightly
+
 todo: # search for TODO items
 > @find . -type f \
 >   -not -path '*/\.*' \
