@@ -55,8 +55,8 @@ endef
 ##############################################################################
 # Rules
 
+build: hr
 build: # build package *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: build
 
@@ -90,6 +90,10 @@ help: # show this help
 hlint: # run hlint on all Haskell source
 > @$(call hs_files) | xargs hlint
 .PHONY: hlint
+
+hr: #internal# display a horizontal rule
+> @command -v hr >/dev/null 2>&1 && hr -t || true
+.PHONY: hr
 
 hsgrep: # grep all Haskell source for expression E
 > $(eval E := "")
@@ -172,9 +176,9 @@ source-tar: # create source tarball using tar
 > @rm -f build/.gitignore
 .PHONY: source-tar
 
+test: hr
 test: # run tests, optionally for pattern P *
 > $(eval P := "")
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 > @test -z "$(P)" \
 >   && stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   || stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
@@ -197,7 +201,6 @@ test-all: # run tests for all configured Stackage releases
 .PHONY: test-all
 
 test-nightly: # run tests for the latest Stackage nightly release
-> @command -v hr >/dev/null 2>&1 && hr nightly || true
 > @make test RESOLVER=nightly
 .PHONY: test-nightly
 
