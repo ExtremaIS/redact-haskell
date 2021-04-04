@@ -78,6 +78,7 @@ endif
 .PHONY: clean
 
 clean-all: clean # clean package and remove artifacts
+> @rm -rf .hie
 > @rm -rf .stack-work
 > @rm -rf build
 > @rm -rf dist-newstyle
@@ -194,6 +195,17 @@ source-tar: # create source tarball using tar
 >   .
 > @rm -f build/.gitignore
 .PHONY: source-tar
+
+stan: hr
+stan: export STAN_USE_DEFAULT_CONFIG=True
+stan: # run stan static analysis
+ifeq ($(MODE), cabal)
+> @cabal v2-build -f write-hie
+else
+> @stack build --flag $(PACKAGE):write-hie
+endif
+> @stan
+.PHONY: stan
 
 test: hr
 test: # run tests, optionally for pattern P *

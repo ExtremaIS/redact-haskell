@@ -33,6 +33,10 @@ source-repository head
   type: git
   location: https://github.com/ExtremaIS/redact-haskell.git
 
+flag write-hie
+  description: write .hie files
+  default: False
+
 executable redact
   main-is: redact.hs
   other-modules:
@@ -45,7 +49,10 @@ executable redact
     , directory >=1.3 && <1.4
     , optparse-applicative >=0.14 && <0.17
   default-language: Haskell2010
-  ghc-options: -Wall
+  if flag(write-hie)
+    ghc-options: -Wall -fwrite-ide-info -hiedir=.hie
+  else
+    ghc-options: -Wall
 
 test-suite redact-test
   type: exitcode-stdio-1.0

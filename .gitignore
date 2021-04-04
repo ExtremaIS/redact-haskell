@@ -6,6 +6,9 @@
 *.yaml.lock
 stack-nix*
 
+# stan
+/.hie/
+
 # cabal
 cabal.project.local
 cabal.project.local~
