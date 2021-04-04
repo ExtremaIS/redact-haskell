@@ -30,6 +30,7 @@ following conventions:
 
 * Add support for `optparse-applicative` `0.16`
 * Add Cabal support to `Makefile`
+* Add Cabal tests to GitHub Actions
 
 ## 0.1.0.0 (2020-11-28)
 
