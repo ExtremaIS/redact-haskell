@@ -37,6 +37,11 @@ ifneq ($(origin CONFIG), undefined)
   STACK_YAML_ARGS := "--stack-yaml" "$(CONFIG)"
 endif
 
+MODE := stack
+ifneq ($(origin CABAL), undefined)
+  MODE := cabal
+endif
+
 ##############################################################################
 # Functions
 
@@ -57,11 +62,19 @@ endef
 
 build: hr
 build: # build package *
+ifeq ($(MODE), cabal)
+> @cabal v2-build
+else
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
+endif
 .PHONY: build
 
 clean: # clean package
+ifeq ($(MODE), cabal)
+> @rm -rf dist-newstyle
+else
 > @stack clean
+endif
 .PHONY: clean
 
 clean-all: clean # clean package and remove artifacts
@@ -69,6 +82,7 @@ clean-all: clean # clean package and remove artifacts
 > @rm -rf build
 > @rm -rf dist-newstyle
 > @rm -f *.yaml.lock
+> @rm -f cabal.project.local
 .PHONY: clean-all
 
 grep: # grep all non-hidden files for expression E
@@ -85,6 +99,7 @@ help: # show this help
 > @echo "* Use STACK_NIX_PATH to specify a Nix path."
 > @echo "* Use RESOLVER to specify a resolver."
 > @echo "* Use CONFIG to specify a Stack configuration file."
+> @echo "* Use CABAL to use Cabal instead of Stack."
 .PHONY: help
 
 hlint: # run hlint on all Haskell source
@@ -131,7 +146,11 @@ recent: # show N most recently modified files
 .PHONY: recent
 
 repl: # enter a REPL *
+ifeq ($(MODE), cabal)
+> @cabal repl
+else
 > @stack exec ghci $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
+endif
 .PHONY: repl
 
 source-git: # create source tarball of git TREE
@@ -179,10 +198,17 @@ source-tar: # create source tarball using tar
 test: hr
 test: # run tests, optionally for pattern P *
 > $(eval P := "")
+ifeq ($(MODE), cabal)
+> @test -z "$(P)" \
+>   && cabal v2-test --enable-tests --test-show-details=always \
+>   && cabal v2-test --enable-tests --test-show-details=always \
+>       --test-option '--patern=$(P)'
+else
 > @test -z "$(P)" \
 >   && stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   || stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >       --test-arguments '--pattern $(P)'
+endif
 .PHONY: test
 
 test-all: # run tests for all configured Stackage releases
