@@ -11,7 +11,7 @@
 -- projects as required.  If the library grows to a substantial size or others
 -- with to use it, I will reconsider.
 --
--- Revision: 2020-01-02
+-- Revision: 2021-04-04
 ------------------------------------------------------------------------------
 
 {-# LANGUAGE CPP #-}
@@ -55,12 +55,25 @@ import qualified Options.Applicative.Types as OAT
 -- This is the same as 'OA.helper' except that it has a different help
 -- message.
 helper :: OA.Parser (a -> a)
+#if MIN_VERSION_optparse_applicative (0,16,0)
+helper = OA.option helpReader $ mconcat
+    [ OA.short 'h'
+    , OA.long "help"
+    , OA.help "show this help text"
+    , OA.hidden
+    ]
+  where
+    helpReader = do
+      potentialCommand <- OAT.readerAsk
+      OA.readerAbort $ OA.ShowHelpText (Just potentialCommand)
+#else
 helper = OA.abortOption OA.ShowHelpText $ mconcat
     [ OA.short 'h'
     , OA.long "help"
     , OA.help "show help and exit"
     , OA.hidden
     ]
+#endif
 
 -- | A hidden @--version@ option that always fails, showing the version
 versioner
@@ -80,7 +93,7 @@ commands :: OA.Parser a -> [String]
 commands =
     let go _ opt = case OAT.optMain opt of
            OAT.CmdReader _ cmds _ -> reverse cmds
-           _                      -> []
+           _otherReader           -> []
     in  concat . OAC.mapParser go
 
 ------------------------------------------------------------------------------
@@ -89,6 +102,7 @@ commands =
 -- | Insert a blank line between two documents
 (<||>) :: Doc -> Doc -> Doc
 d1 <||> d2 = d1 <> Doc.line <> Doc.line <> d2
+infixr 5 <||>
 
 -- | Create a section with a title and indented body
 section :: String -> Doc -> Doc
