@@ -132,8 +132,7 @@ man: # build man page
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > $(eval DATE := $(shell date --rfc-3339=date))
-> @mkdir -p build
-> @pandoc -s -t man -o build/$(BINARY).1 \
+> @pandoc -s -t man -o doc/$(BINARY).1 \
 >   --variable header="$(BINARY) Manual" \
 >   --variable footer="$(PROJECT) $(VERSION) ($(DATE))" \
 >   doc/$(BINARY).1.md
