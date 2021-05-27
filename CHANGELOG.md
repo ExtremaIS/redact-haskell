@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Non-Breaking
+
+* Fix link in README
+
 ## 0.2.0.0 (2021-05-27)
 
 ### Breaking

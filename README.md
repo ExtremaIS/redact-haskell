@@ -60,7 +60,7 @@ Check the [Releases][] page for `.deb` packages.
 
 Check the [Releases][] page for `.rpm` packages.
 
-[Releases]: <https://github.com/ExtremaIS/literatex-haskell/releases>
+[Releases]: <https://github.com/ExtremaIS/redact-haskell/releases>
 
 ## Usage
 
