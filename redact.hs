@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : redact: hide secret text on the terminal
--- Copyright   : Copyright (c) 2020 Travis Cardwell
+-- Copyright   : Copyright (c) 2020-2021 Travis Cardwell
 -- License     : MIT
 --
 -- See the README for details.
@@ -131,7 +131,7 @@ getOptions = do
         , optColors    = optColors opts2
         , optTest      = optTest opts2
         }
-      _ -> do
+      _otherOptions -> do
         configOpts <- loadConfigFile
         return Options
           { optColor = pure . fromMaybe defaultColor $
@@ -298,8 +298,9 @@ loadConfigFile = do
           Left err -> errorExit $
             "config file: intensity error on line " ++ show lineNum ++ ": " ++
             err
-        _ -> return opts
-      _ -> errorExit $ "config file: unable to parse line " ++ show lineNum
+        _otherKey -> return opts
+      _mistmatch ->
+        errorExit $ "config file: unable to parse line " ++ show lineNum
 
 strip :: String -> String
 strip = dropWhile isSpace . dropWhileEnd isSpace
@@ -325,7 +326,7 @@ redactLine color intensity = go
         Term.setSGR [Term.Reset]
       case rest of
         '`' : s' -> putStr "`" >> go s'
-        _ -> putStrLn ""
+        _emptyString -> putStrLn ""
     go s = do
       let (clearText, rest) = break (== '`') s
       putStr clearText

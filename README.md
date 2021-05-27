@@ -1,11 +1,14 @@
 # redact
 
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![GitHub CI](https://github.com/ExtremaIS/redact-haskell/workflows/CI/badge.svg?branch=main)](https://github.com/ExtremaIS/redact-haskell/actions)
 
 * [Overview](#overview)
 * [Requirements](#requirements)
 * [Installation](#installation)
     * [Installation From Source](#installation-from-source)
+    * [`.deb` Package Installation](#deb-package-installation)
+    * [`.rpm` Package Installation](#rpm-package-installation)
 * [Usage](#usage)
 * [Project](#project)
     * [Links](#links)
@@ -37,15 +40,27 @@ be added in a future release.
 
 ### Installation From Source
 
-`redact` can be built from source using [Stack](https://www.haskellstack.org).
-For example, you can install the latest release (to `~/.local/bin` on Linux)
-as follows:
+`redact` can be built from source using [Stack][].  For example, you can
+install the latest release (to `/usr/bin` on Linux) as follows:
 
 ```
 $ git clone https://github.com/ExtremaIS/redact-haskell.git
 $ cd redact-haskell
-$ stack install
+$ make
+$ sudo make install
 ```
+
+[Stack]: <https://www.haskellstack.org>
+
+#### `.deb` Package Installation
+
+Check the [Releases][] page for `.deb` packages.
+
+#### `.rpm` Package Installation
+
+Check the [Releases][] page for `.rpm` packages.
+
+[Releases]: <https://github.com/ExtremaIS/literatex-haskell/releases>
 
 ## Usage
 

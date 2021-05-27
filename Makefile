@@ -6,6 +6,16 @@ BINARY     := $(PACKAGE)
 CABAL_FILE := $(PACKAGE).cabal
 PROJECT    := $(PACKAGE)-haskell
 
+MAINTAINER_NAME  = Travis Cardwell
+MAINTAINER_EMAIL = travis.cardwell@extrema.is
+
+DESTDIR     ?=
+PREFIX      ?= /usr/local
+bindir      ?= $(DESTDIR)/$(PREFIX)/bin
+datarootdir ?= $(DESTDIR)/$(PREFIX)/share
+docdir      ?= $(datarootdir)/doc/$(PROJECT)
+man1dir     ?= $(datarootdir)/man/man1
+
 ##############################################################################
 # Make configuration
 
@@ -37,11 +47,20 @@ ifneq ($(origin CONFIG), undefined)
   STACK_YAML_ARGS := "--stack-yaml" "$(CONFIG)"
 endif
 
+MODE := stack
+ifneq ($(origin CABAL), undefined)
+  MODE := cabal
+endif
+
 ##############################################################################
 # Functions
 
 define all_files
   find . -not -path '*/\.*' -type f
+endef
+
+define checksum_files
+  find . -maxdepth 1 -type f -not -path './*SUMS' | sed 's,^\./,,' | sort
 endef
 
 define die
@@ -55,20 +74,51 @@ endef
 ##############################################################################
 # Rules
 
+build: hr
 build: # build package *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
+ifeq ($(MODE), cabal)
+> @cabal v2-build
+else
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
+endif
 .PHONY: build
 
+checksums: # calculate checksums of build artifacts
+> @cd build && $(call checksum_files) | xargs md5sum > MD5SUMS
+> @cd build && $(call checksum_files) | xargs sha1sum > SHA1SUMS
+> @cd build && $(call checksum_files) | xargs sha256sum > SHA256SUMS
+> @cd build && $(call checksum_files) | xargs sha512sum > SHA512SUMS
+.PHONY: checksums
+
 clean: # clean package
+ifeq ($(MODE), cabal)
+> @rm -rf dist-newstyle
+else
 > @stack clean
+endif
 .PHONY: clean
 
 clean-all: clean # clean package and remove artifacts
+> @rm -rf .hie
 > @rm -rf .stack-work
 > @rm -rf build
+> @rm -rf dist-newstyle
 > @rm -f *.yaml.lock
+> @rm -f cabal.project.local
 .PHONY: clean-all
+
+deb: # build .deb package for VERSION in a Debian container
+> $(eval VERSION := $(shell \
+    grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
+> $(eval SRC := "$(PROJECT)-$(VERSION).tar.xz")
+> @test -f build/$(SRC) || $(call die,"build/$(SRC) not found")
+> @docker run --rm -it \
+>   -e DEBFULLNAME="$(MAINTAINER_NAME)" \
+>   -e DEBEMAIL="$(MAINTAINER_EMAIL)" \
+>   -v $(PWD)/build:/host \
+>   extremais/pkg-debian-stack:buster \
+>   /home/docker/bin/make-deb.sh "$(SRC)"
+.PHONY: deb
 
 grep: # grep all non-hidden files for expression E
 > $(eval E:= "")
@@ -84,11 +134,16 @@ help: # show this help
 > @echo "* Use STACK_NIX_PATH to specify a Nix path."
 > @echo "* Use RESOLVER to specify a resolver."
 > @echo "* Use CONFIG to specify a Stack configuration file."
+> @echo "* Use CABAL to use Cabal instead of Stack."
 .PHONY: help
 
 hlint: # run hlint on all Haskell source
 > @$(call hs_files) | xargs hlint
 .PHONY: hlint
+
+hr: #internal# display a horizontal rule
+> @command -v hr >/dev/null 2>&1 && hr -t || true
+.PHONY: hr
 
 hsgrep: # grep all Haskell source for expression E
 > $(eval E := "")
@@ -107,12 +162,36 @@ hssloc: # count lines of Haskell source
 > @$(call hs_files) | xargs wc -l | tail -n 1 | sed 's/^ *\([0-9]*\).*$$/\1/'
 .PHONY: hssloc
 
+install: install-bin
+install: install-man
+install: install-doc
+install: # install everything to PREFIX
+.PHONY: install
+
+install-bin: build
+install-bin: # install executable to PREFIX/bin
+> $(eval LIROOT := $(shell stack path --local-install-root))
+> @mkdir -p "$(bindir)"
+> @install -m 0755 "$(LIROOT)/bin/$(BINARY)" "$(bindir)/$(BINARY)"
+.PHONY: install-bin
+
+install-doc: # install documentation to PREFIX/share/doc/redact-haskell
+> @mkdir -p "$(docdir)"
+> @install -m 0644 -T <(gzip -c README.md) "$(docdir)/README.md.gz"
+> @install -m 0644 -T <(gzip -c CHANGELOG.md) "$(docdir)/changelog.gz"
+> @install -m 0644 -T <(gzip -c LICENSE) "$(docdir)/LICENSE.gz"
+.PHONY: install-doc
+
+install-man: # install manual to PREFIX/share/man/man1
+> @mkdir -p "$(man1dir)"
+> @install -m 0644 -T <(gzip -c doc/$(BINARY).1) "$(man1dir)/$(BINARY).1.gz"
+.PHONY: install-man
+
 man: # build man page
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > $(eval DATE := $(shell date --rfc-3339=date))
-> @mkdir -p build
-> @pandoc -s -t man -o build/$(BINARY).1 \
+> @pandoc -s -t man -o doc/$(BINARY).1 \
 >   --variable header="$(BINARY) Manual" \
 >   --variable footer="$(PROJECT) $(VERSION) ($(DATE))" \
 >   doc/$(BINARY).1.md
@@ -126,13 +205,38 @@ recent: # show N most recently modified files
 .PHONY: recent
 
 repl: # enter a REPL *
+ifeq ($(MODE), cabal)
+> @cabal repl
+else
 > @stack exec ghci $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
+endif
 .PHONY: repl
+
+rpm: # build .rpm package for VERSION in a Fedora container
+> $(eval VERSION := $(shell \
+    grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
+> $(eval SRC := "$(PROJECT)-$(VERSION).tar.xz")
+> @test -f build/$(SRC) || $(call die,"build/$(SRC) not found")
+> @docker run --rm -it \
+>   -e RPMFULLNAME="$(MAINTAINER_NAME)" \
+>   -e RPMEMAIL="$(MAINTAINER_EMAIL)" \
+>   -v $(PWD)/build:/host \
+>   extremais/pkg-fedora-stack:34 \
+>   /home/docker/bin/make-rpm.sh "$(SRC)"
+.PHONY: rpm
 
 source-git: # create source tarball of git TREE
 > $(eval TREE := "HEAD")
 > $(eval BRANCH := $(shell git rev-parse --abbrev-ref $(TREE)))
-> @test "${BRANCH}" = "main" || echo "WARNING: Not in main branch!" >&2
+> @test "$(BRANCH)" = "main" || echo "WARNING: Not in main branch!" >&2
+> $(eval DIRTY := $(shell git diff --shortstat | wc -l))
+> @test "$(DIRTY)" = "0" \
+>   || echo "WARNING: Not including non-committed changes!" >&2
+> $(eval UNTRACKED := $(shell \
+    git ls-files --other --directory --no-empty-directory --exclude-standard \
+    | wc -l))
+> @test "$(UNTRACKED)" = "0" \
+>   || echo "WARNING: Not including untracked files!" >&2
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > @mkdir -p build
@@ -142,6 +246,14 @@ source-git: # create source tarball of git TREE
 .PHONY: source-git
 
 source-tar: # create source tarball using tar
+> $(eval DIRTY := $(shell git diff --shortstat | wc -l))
+> @test "$(DIRTY)" = "0" \
+>   || echo "WARNING: Including non-committed changes!" >&2
+> $(eval UNTRACKED := $(shell \
+    git ls-files --other --directory --no-empty-directory --exclude-standard \
+    | wc -l))
+> @test "$(UNTRACKED)" = "0" \
+>   || echo "WARNING: Including untracked files!" >&2
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > @mkdir -p build
@@ -155,49 +267,51 @@ source-tar: # create source tarball using tar
 > @rm -f build/.gitignore
 .PHONY: source-tar
 
+stan: hr
+stan: export STAN_USE_DEFAULT_CONFIG=True
+stan: # run stan static analysis
+ifeq ($(MODE), cabal)
+> @cabal v2-build -f write-hie
+else
+> @stack build --flag $(PACKAGE):write-hie
+endif
+> @stan
+.PHONY: stan
+
+test: hr
 test: # run tests, optionally for pattern P *
 > $(eval P := "")
-> @command -v hr >/dev/null 2>&1 && hr -t || true
+ifeq ($(MODE), cabal)
+> @test -z "$(P)" \
+>   && cabal v2-test --enable-tests --test-show-details=always \
+>   && cabal v2-test --enable-tests --test-show-details=always \
+>       --test-option '--patern=$(P)'
+else
 > @test -z "$(P)" \
 >   && stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   || stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >       --test-arguments '--pattern $(P)'
+endif
 .PHONY: test
 
-test-all: # run tests for all versions
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.2.2.yaml \
-    && echo stack-nix-8.2.2.yaml \
-    || echo stack-8.2.2.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.4.4.yaml \
-    && echo stack-nix-8.4.4.yaml \
-    || echo stack-8.4.4.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.6.5.yaml \
-    && echo stack-nix-8.6.5.yaml \
-    || echo stack-8.6.5.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix.yaml \
-    && echo stack-nix.yaml \
-    || echo stack.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test CONFIG=$(CONFIG)
-> $(eval STACK_NIX_PATH := $(shell \
-    test -f stack-nix-nightly.path \
-    && cat stack-nix-nightly.path \
-    || true))
-> @command -v hr >/dev/null 2>&1 && hr nightly || true
-> @test -f stack-nix-nightly.path \
->   && make test RESOLVER=nightly STACK_NIX_PATH="$(STACK_NIX_PATH)" \
->   || make test RESOLVER=nightly
+test-all: # run tests for all configured Stackage releases
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.2.2.yaml" || true
+> @make test CONFIG=stack-8.2.2.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.4.4.yaml" || true
+> @make test CONFIG=stack-8.4.4.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.6.5.yaml" || true
+> @make test CONFIG=stack-8.6.5.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.8.4.yaml" || true
+> @make test CONFIG=stack-8.8.4.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.10.4.yaml" || true
+> @make test CONFIG=stack-8.10.4.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-9.0.1.yaml" || true
+> @make test CONFIG=stack-9.0.1.yaml
 .PHONY: test-all
+
+test-nightly: # run tests for the latest Stackage nightly release
+> @make test RESOLVER=nightly
+.PHONY: test-nightly
 
 todo: # search for TODO items
 > @find . -type f \

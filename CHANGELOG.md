@@ -24,6 +24,19 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.2.0.0 (2021-05-27)
+
+### Breaking
+
+* Add support for `optparse-applicative` `0.16`
+
+### Non-Breaking
+
+* Add `.deb` and `.rpm` packaging
+* Add Cabal support to `Makefile`
+* Add Cabal tests to GitHub Actions
+* Add [stan](https://hackage.haskell.org/package/stan) static analysis
+
 ## 0.1.0.0 (2020-11-28)
 
 ### Breaking
