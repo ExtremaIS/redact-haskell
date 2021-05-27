@@ -24,6 +24,12 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.2.0.1 (2021-05-27)
+
+### Non-Breaking
+
+* Fix link in README
+
 ## 0.2.0.0 (2021-05-27)
 
 ### Breaking
