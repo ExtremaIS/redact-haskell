@@ -13,7 +13,5 @@
 ## Project
 
 * Arch `PKGBUILD`
-* `deb` package
-* `rpm` package
 * Windows executable
 * Mac OS executable
