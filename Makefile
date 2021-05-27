@@ -6,6 +6,9 @@ BINARY     := $(PACKAGE)
 CABAL_FILE := $(PACKAGE).cabal
 PROJECT    := $(PACKAGE)-haskell
 
+MAINTAINER_NAME  = Travis Cardwell
+MAINTAINER_EMAIL = travis.cardwell@extrema.is
+
 DESTDIR     ?=
 PREFIX      ?= /usr/local
 bindir      ?= $(DESTDIR)/$(PREFIX)/bin
@@ -56,6 +59,10 @@ define all_files
   find . -not -path '*/\.*' -type f
 endef
 
+define checksum_files
+  find . -maxdepth 1 -type f -not -path './*SUMS' | sed 's,^\./,,' | sort
+endef
+
 define die
   (echo "error: $(1)" ; false)
 endef
@@ -76,6 +83,13 @@ else
 endif
 .PHONY: build
 
+checksums: # calculate checksums of build artifacts
+> @cd build && $(call checksum_files) | xargs md5sum > MD5SUMS
+> @cd build && $(call checksum_files) | xargs sha1sum > SHA1SUMS
+> @cd build && $(call checksum_files) | xargs sha256sum > SHA256SUMS
+> @cd build && $(call checksum_files) | xargs sha512sum > SHA512SUMS
+.PHONY: checksums
+
 clean: # clean package
 ifeq ($(MODE), cabal)
 > @rm -rf dist-newstyle
@@ -92,6 +106,19 @@ clean-all: clean # clean package and remove artifacts
 > @rm -f *.yaml.lock
 > @rm -f cabal.project.local
 .PHONY: clean-all
+
+deb: # build .deb package for VERSION in a Debian container
+> $(eval VERSION := $(shell \
+    grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
+> $(eval SRC := "$(PROJECT)-$(VERSION).tar.xz")
+> @test -f build/$(SRC) || $(call die,"build/$(SRC) not found")
+> @docker run --rm -it \
+>   -e DEBFULLNAME="$(MAINTAINER_NAME)" \
+>   -e DEBEMAIL="$(MAINTAINER_EMAIL)" \
+>   -v $(PWD)/build:/host \
+>   extremais/pkg-debian-stack:buster \
+>   /home/docker/bin/make-deb.sh "$(SRC)"
+.PHONY: deb
 
 grep: # grep all non-hidden files for expression E
 > $(eval E:= "")
@@ -184,6 +211,19 @@ else
 > @stack exec ghci $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 endif
 .PHONY: repl
+
+rpm: # build .rpm package for VERSION in a Fedora container
+> $(eval VERSION := $(shell \
+    grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
+> $(eval SRC := "$(PROJECT)-$(VERSION).tar.xz")
+> @test -f build/$(SRC) || $(call die,"build/$(SRC) not found")
+> @docker run --rm -it \
+>   -e RPMFULLNAME="$(MAINTAINER_NAME)" \
+>   -e RPMEMAIL="$(MAINTAINER_EMAIL)" \
+>   -v $(PWD)/build:/host \
+>   extremais/pkg-fedora-stack:34 \
+>   /home/docker/bin/make-rpm.sh "$(SRC)"
+.PHONY: rpm
 
 source-git: # create source tarball of git TREE
 > $(eval TREE := "HEAD")
