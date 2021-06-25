@@ -24,6 +24,16 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.3.0.0 (2021-06-25)
+
+### Breaking
+
+* Fix `--help` when using `optparse-applicative` `0.16`
+
+### Non-Breaking
+
+* Refactor Nix configuration
+
 ## 0.2.0.1 (2021-05-27)
 
 ### Non-Breaking
