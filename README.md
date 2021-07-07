@@ -41,7 +41,7 @@ be added in a future release.
 ### Installation From Source
 
 `redact` can be built from source using [Stack][].  For example, you can
-install the latest release (to `/usr/bin` on Linux) as follows:
+install the latest release (to `/usr/local` on Linux) as follows:
 
 ```
 $ git clone https://github.com/ExtremaIS/redact-haskell.git
