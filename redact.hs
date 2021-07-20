@@ -195,9 +195,9 @@ parseArgs = OA.execParser pinfo
               ]
           )
       , Doc.text "4. defaults" Doc.<$$>
-          ( Doc.indent 5 . LibOA.table $
-              [ ("color:", toLower <$> show defaultColor)
-              , ("intensity:", toLower <$> show defaultIntensity)
+          ( Doc.indent 5 . LibOA.table_ 2 $
+              [ ["color:", toLower <$> show defaultColor]
+              , ["intensity:", toLower <$> show defaultIntensity]
               ]
           )
       ]
