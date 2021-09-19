@@ -9,6 +9,6 @@
   redact-ghc-844 = import ./default.nix { compiler = "ghc844"; };
   redact-ghc-865 = import ./default.nix { compiler = "ghc865"; };
   redact-ghc-884 = import ./default.nix { compiler = "ghc884"; };
-  redact-ghc-8104 = import ./default.nix { compiler = "ghc8104"; };
+  redact-ghc-8107 = import ./default.nix { compiler = "ghc8107"; };
   redact-ghc-901 = import ./default.nix { compiler = "ghc901"; };
 }
