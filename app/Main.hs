@@ -22,7 +22,7 @@ import Text.PrettyPrint.ANSI.Leijen (Doc)
 
 -- https://hackage.haskell.org/package/base
 import Control.Applicative ((<|>), optional)
-import Control.Monad (foldM, forM_)
+import Control.Monad (foldM, forM_, when)
 import Data.Bifunctor (Bifunctor(bimap))
 import Data.Char (isSpace, toLower)
 import Data.Functor.Identity (Identity(runIdentity))
@@ -30,7 +30,7 @@ import Data.List (dropWhileEnd, intercalate)
 import Data.Maybe (fromMaybe, isJust)
 import Data.String (fromString)
 import System.Environment (lookupEnv)
-import System.Exit (ExitCode(ExitFailure), exitWith)
+import System.Exit (ExitCode(ExitFailure), exitSuccess, exitWith)
 import System.IO (hPutStrLn, stderr, stdin)
 
 -- https://hackage.haskell.org/package/directory
@@ -56,9 +56,13 @@ defaultColor = Term.Red
 defaultIntensity :: Term.ColorIntensity
 defaultIntensity = Term.Vivid
 
-envColorName, envIntensityName :: String
+defaultLenient :: Bool
+defaultLenient = False
+
+envColorName, envIntensityName, envLenientName :: String
 envColorName     = "REDACT_COLOR"
 envIntensityName = "REDACT_INTENSITY"
+envLenientName   = "REDACT_LENIENT"
 
 configFileName :: FilePath
 configFileName = "redact.ini"
@@ -96,6 +100,17 @@ parseIntensity s
     $ lookup (toLower <$> s) intensityMap
 
 ------------------------------------------------------------------------------
+-- $Lenient
+
+parseLenient
+  :: String
+  -> Either String Bool
+parseLenient s = case toLower <$> s of
+    "true"  -> Right True
+    "false" -> Right False
+    _other  -> Left $ "lenient setting not true/false: " ++ s
+
+------------------------------------------------------------------------------
 -- $Options
 
 -- | Program options
@@ -104,161 +119,199 @@ data Options f
     { optColor     :: !(f Term.Color)
     , optIntensity :: !(f Term.ColorIntensity)
     , optFile      :: !(Maybe FilePath)
+    , optLenient   :: !(f Bool)
     , optColors    :: !Bool
     , optTest      :: !Bool
     }
 
 getOptions :: IO (Options Identity)
 getOptions = do
-    opts0 <- parseArgs
-
-    opts1 <- if isJust (optColor opts0)
-      then return opts0
-      else do
-        mColor <- getEnvColor
-        return opts0 { optColor = mColor }
-    opts2 <- if isJust (optIntensity opts1)
-      then return opts1
-      else do
-        mIntensity <- getEnvIntensity
-        return opts1 { optIntensity = mIntensity }
-
-    case (optColor opts2, optIntensity opts2) of
-      (Just color, Just intensity) -> return Options
+    opts <-
+      maybeLoadEnv getEnvColor optColor
+        (\o x -> o { optColor = x }) =<<
+      maybeLoadEnv getEnvIntensity optIntensity
+        (\o x -> o { optIntensity = x }) =<<
+      maybeLoadEnv getEnvLenient optLenient
+        (\o x -> o { optLenient = x }) =<<
+      parseArgs
+    case (optColor opts, optIntensity opts, optLenient opts) of
+      (Just color, Just intensity, Just lenient) -> return Options
         { optColor     = pure color
         , optIntensity = pure intensity
-        , optFile      = optFile opts2
-        , optColors    = optColors opts2
-        , optTest      = optTest opts2
+        , optFile      = optFile opts
+        , optLenient   = pure lenient
+        , optColors    = optColors opts
+        , optTest      = optTest opts
         }
       _otherOptions -> do
         configOpts <- loadConfigFile
         return Options
           { optColor = pure . fromMaybe defaultColor $
-              optColor opts2 <|> configColor configOpts
+              optColor opts <|> configColor configOpts
           , optIntensity = pure . fromMaybe defaultIntensity $
-              optIntensity opts2 <|> configIntensity configOpts
-          , optFile   = optFile opts2
-          , optColors = optColors opts2
-          , optTest   = optTest opts2
+              optIntensity opts <|> configIntensity configOpts
+          , optFile = optFile opts
+          , optLenient = pure . fromMaybe defaultLenient $
+              optLenient opts <|> configLenient configOpts
+          , optColors = optColors opts
+          , optTest = optTest opts
           }
+  where
+    maybeLoadEnv
+      :: IO (Maybe a)
+      -> (Options Maybe -> Maybe a)
+      -> (Options Maybe -> Maybe a -> Options Maybe)
+      -> Options Maybe
+      -> IO (Options Maybe)
+    maybeLoadEnv getEnv getOpt setOpt opts
+      | isJust (getOpt opts) = pure opts
+      | otherwise = setOpt opts <$> getEnv
 
 ------------------------------------------------------------------------------
 -- $Arguments
 
 parseArgs :: IO (Options Maybe)
-parseArgs = OA.execParser pinfo
+parseArgs
+    = OA.execParser
+    . OA.info (LibOA.helper <*> LibOA.versioner version <*> options)
+    $ mconcat
+        [ OA.fullDesc
+        , OA.progDesc "hide secret text on the terminal"
+        , OA.failureCode 2
+        , OA.footerDoc $ Just footer
+        ]
   where
-    pinfo :: OA.ParserInfo (Options Maybe)
-    pinfo
-      = OA.info (LibOA.helper <*> LibOA.versioner version <*> options)
-      $ mconcat
-          [ OA.fullDesc
-          , OA.progDesc "hide secret text on the terminal"
-          , OA.failureCode 2
-          , OA.footerDoc $ Just footer
-          ]
-
     version :: String
     version = "redact-haskell " ++ Project.version
 
-    options :: OA.Parser (Options Maybe)
-    options =
-      Options
-        <$> colorOption
-        <*> intensityOption
-        <*> fileOption
-        <*> colorsOption
-        <*> testOption
+options :: OA.Parser (Options Maybe)
+options = Options
+    <$> colorOption
+    <*> intensityOption
+    <*> fileOption
+    <*> lenientOption
+    <*> colorsOption
+    <*> testOption
+  where
+    colorOption :: OA.Parser (Maybe Term.Color)
+    colorOption = optional . OA.option (OA.eitherReader parseColor) $ mconcat
+      [ OA.long "color"
+      , OA.short 'c'
+      , OA.metavar "COLOR"
+      , OA.help "redacted text color"
+      ]
 
-    footer :: Doc
-    footer = colorsHelp LibOA.<||> intensitiesHelp LibOA.<||> settingsHelp
+    intensityOption :: OA.Parser (Maybe Term.ColorIntensity)
+    intensityOption =
+      optional . OA.option (OA.eitherReader parseIntensity) $ mconcat
+        [ OA.long "intensity"
+        , OA.short 'i'
+        , OA.metavar "INTENSITY"
+        , OA.help "redacted text color intensity"
+        ]
 
+    fileOption :: OA.Parser (Maybe FilePath)
+    fileOption = optional . OA.strOption $ mconcat
+      [ OA.long "file"
+      , OA.short 'f'
+      , OA.metavar "PATH"
+      , OA.help "input file (default: STDIN)"
+      ]
+
+    lenientOption :: OA.Parser (Maybe Bool)
+    lenientOption = OA.flag Nothing (Just True) $ mconcat
+      [ OA.long "lenient"
+      , OA.short 'l'
+      , OA.help "do not exit on parse errors"
+      ]
+
+    colorsOption :: OA.Parser Bool
+    colorsOption = OA.switch $ mconcat
+      [ OA.long "colors"
+      , OA.help "redact test text using all possible colors"
+      ]
+
+    testOption :: OA.Parser Bool
+    testOption = OA.switch $ mconcat
+      [ OA.long "test"
+      , OA.help "redact test text using the configured color"
+      ]
+
+footer :: Doc
+footer = LibOA.vspace
+    [ colorsHelp
+    , intensitiesHelp
+    , lenientHelp
+    , settingsHelp
+    ]
+  where
     colorsHelp :: Doc
-    colorsHelp = LibOA.section "Colors:" . Doc.text $
+    colorsHelp = LibOA.section "COLOR values:" . Doc.text $
       intercalate ", " (fst <$> colorMap)
 
     intensitiesHelp :: Doc
-    intensitiesHelp = LibOA.section "Intensities:" . Doc.text $
+    intensitiesHelp = LibOA.section "INTENSITY values:" . Doc.text $
       intercalate ", " (fst <$> intensityMap)
+
+    lenientHelp :: Doc
+    lenientHelp = LibOA.section "LENIENT values:" $ Doc.text "true, false"
 
     settingsHelp :: Doc
     settingsHelp = LibOA.section "Settings priority:" . Doc.vcat $
-      [ Doc.text "1. command-line options (--color, --intensity)"
-      , Doc.text $
-          "2. environment variables (" ++
-          envColorName ++ ", " ++ envIntensityName ++ ")"
-      , Doc.text ("3. settings file (" ++ configFileName ++ ")") Doc.<$$>
-          ( Doc.indent 5 . Doc.vcat $
-              [ Doc.text "color=COLOR"
-              , Doc.text "intensity=INTENSITY"
+      [ Doc.text "1. command-line options" Doc.<$$> Doc.indent 5
+          ( Doc.vcat
+              [ Doc.text "--color"
+              , Doc.text "--intensity"
+              , Doc.text "--lenient"
               ]
           )
-      , Doc.text "4. defaults" Doc.<$$>
-          ( Doc.indent 5 . LibOA.table_ 2 $
+      , Doc.text "2. environment variables" Doc.<$$> Doc.indent 5
+          ( Doc.vcat
+              [ Doc.text $ envColorName ++ "=COLOR"
+              , Doc.text $ envIntensityName ++ "=INTENSITY"
+              , Doc.text $ envLenientName ++ "=LENIENT"
+              ]
+          )
+      , Doc.text ("3. settings file (" ++ configFileName ++ ")") Doc.<$$>
+          Doc.indent 5
+            ( Doc.vcat
+                [ Doc.text "color=COLOR"
+                , Doc.text "intensity=INTENSITY"
+                , Doc.text "lenient=LENIENT"
+                ]
+            )
+      , Doc.text "4. defaults" Doc.<$$> Doc.indent 5
+          ( LibOA.table_ 2
               [ ["color:", toLower <$> show defaultColor]
               , ["intensity:", toLower <$> show defaultIntensity]
+              , ["lenient:", toLower <$> show defaultLenient]
               ]
           )
       ]
-
-colorOption :: OA.Parser (Maybe Term.Color)
-colorOption = optional . OA.option (OA.eitherReader parseColor) $ mconcat
-    [ OA.long "color"
-    , OA.short 'c'
-    , OA.metavar "COLOR"
-    , OA.help "redacted text color"
-    ]
-
-intensityOption :: OA.Parser (Maybe Term.ColorIntensity)
-intensityOption = optional . OA.option (OA.eitherReader parseIntensity) $
-    mconcat
-      [ OA.long "intensity"
-      , OA.short 'i'
-      , OA.metavar "INTENSITY"
-      , OA.help "redacted text color intensity"
-      ]
-
-fileOption :: OA.Parser (Maybe FilePath)
-fileOption = optional . OA.strOption $ mconcat
-    [ OA.long "file"
-    , OA.short 'f'
-    , OA.metavar "PATH"
-    , OA.help "input file (default: STDIN)"
-    ]
-
-colorsOption :: OA.Parser Bool
-colorsOption = OA.switch $ mconcat
-    [ OA.long "colors"
-    , OA.help "redact test text using all possible colors"
-    ]
-
-testOption :: OA.Parser Bool
-testOption = OA.switch $ mconcat
-    [ OA.long "test"
-    , OA.help "redact test text using the configured color"
-    ]
 
 ------------------------------------------------------------------------------
 -- $EnvVars
 
-getEnv
+getEnvColor :: IO (Maybe Term.Color)
+getEnvColor = getEnv' envColorName parseColor
+
+getEnvIntensity :: IO (Maybe Term.ColorIntensity)
+getEnvIntensity = getEnv' envIntensityName parseIntensity
+
+getEnvLenient :: IO (Maybe Bool)
+getEnvLenient = getEnv' envLenientName parseLenient
+
+getEnv'
   :: String
   -> (String -> Either String a)
   -> IO (Maybe a)
-getEnv envName parse = do
+getEnv' envName parse = do
     meex <- fmap parse <$> lookupEnv envName
     case meex of
       Nothing -> return Nothing
       Just (Right x) -> return $ Just x
       Just (Left err) -> errorExit $
         "environment variable " ++ envName ++ ": " ++ err
-
-getEnvColor :: IO (Maybe Term.Color)
-getEnvColor = getEnv envColorName parseColor
-
-getEnvIntensity :: IO (Maybe Term.ColorIntensity)
-getEnvIntensity = getEnv envIntensityName parseIntensity
 
 ------------------------------------------------------------------------------
 -- $ConfigFile
@@ -267,6 +320,7 @@ data ConfigFileOptions
   = ConfigFileOptions
     { configColor     :: !(Maybe Term.Color)
     , configIntensity :: !(Maybe Term.ColorIntensity)
+    , configLenient   :: !(Maybe Bool)
     }
 
 loadConfigFile :: IO ConfigFileOptions
@@ -281,6 +335,7 @@ loadConfigFile = do
     defOpts = ConfigFileOptions
       { configColor     = Nothing
       , configIntensity = Nothing
+      , configLenient   = Nothing
       }
 
     go :: ConfigFileOptions -> (Int, String) -> IO ConfigFileOptions
@@ -297,6 +352,11 @@ loadConfigFile = do
           Right intensity -> return opts { configIntensity = Just intensity }
           Left err -> errorExit $
             "config file: intensity error on line " ++ show lineNum ++ ": " ++
+            err
+        "lenient" -> case parseLenient value of
+          Right lenient -> return opts { configLenient = Just lenient }
+          Left err -> errorExit $
+            "config file: lenient error on line " ++ show lineNum ++ ": " ++
             err
         _otherKey -> return opts
       _mistmatch ->
@@ -341,9 +401,13 @@ main = do
     let color     = runIdentity optColor
         intensity = runIdentity optIntensity
         sgrs      = RedactTerm.redactSGRs color intensity
-    case (optColors, optTest, optFile) of
-      (True, _,    _)         -> runColors
-      (_,    True, _)         -> runTest color intensity
-      (_,    _,    Nothing)   -> Redact.handleToTerminal' sgrs stdin
-      (_,    _,    Just path) ->
-        either (errorExit . show) return =<<  Redact.fileToTerminal' sgrs path
+        lenient   = runIdentity optLenient
+    when optColors $ runColors >> exitSuccess
+    when optTest $ runTest color intensity >> exitSuccess
+    either (errorExit . show) return =<< case optFile of
+      Just path
+        | lenient   ->           Redact.fileToTerminal'   sgrs path
+        | otherwise ->           Redact.fileToTerminal    sgrs path
+      Nothing
+        | lenient   -> Right <$> Redact.handleToTerminal' sgrs stdin
+        | otherwise ->           Redact.handleToTerminal  sgrs stdin

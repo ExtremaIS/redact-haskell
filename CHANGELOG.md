@@ -29,6 +29,7 @@ following conventions:
 ### Breaking
 
 * Rewrite using a library
+* Add `--lenient` flag, with strict behavior by default
 
 ### Non-Breaking
 
