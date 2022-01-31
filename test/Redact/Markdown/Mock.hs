@@ -8,7 +8,7 @@ module Redact.Markdown.Mock (tests) where
 import System.IO (IOMode(ReadMode), stdin)
 
 -- https://hackage.haskell.org/package/explainable-predicates
-import Test.Predicates (anything)
+import Test.Predicates (anything, eq)
 
 -- https://hackage.haskell.org/package/HMock
 import Test.HMock ((|->), (|=>), expect, inSequence, runMockT)
@@ -296,11 +296,11 @@ testHandleToTerminalLenientErrorFenced =
 testFileToTerminalStrictOK :: TestTree
 testFileToTerminalStrictOK = testCase "OK" . runMockT $ do
     expect $
-      ( WithFile_ anything anything anything
+      ( WithFile_ (eq "test.md") (eq ReadMode) anything
           :: Matcher MonadHandle "withFile" IO
               (Either IOError (Either Redact.Error ()))
       )
-      |=> \(WithFile "test.md" ReadMode _action) -> pure . Right $ Right ()
+      |=> \(WithFile _path _mode _action) -> pure . Right $ Right ()
     assertSuccess =<< Redact.fileToTerminal redactSGRs "test.md"
 
 ------------------------------------------------------------------------------
@@ -310,11 +310,11 @@ testFileToTerminalStrictRedactError = testCase "error_redact" $ do
     let err = Redact.RedactError "inline code not terminated (line 42)"
     Left err' <- runMockT $ do
       expect $
-        ( WithFile_ anything anything anything
+        ( WithFile_ (eq "test.md") (eq ReadMode) anything
             :: Matcher MonadHandle "withFile" IO
                 (Either IOError (Either Redact.Error ()))
         )
-        |=> \(WithFile "test.md" ReadMode _action) -> pure . Right $ Left err
+        |=> \(WithFile _path _mode _action) -> pure . Right $ Left err
       Redact.fileToTerminal redactSGRs "test.md"
     err' @=? err
 
@@ -325,11 +325,11 @@ testFileToTerminalStrictIOError = testCase "error_io" $ do
     let err = userError "nope"
     Left err' <- runMockT $ do
       expect $
-        ( WithFile_ anything anything anything
+        ( WithFile_ (eq "test.md") (eq ReadMode) anything
             :: Matcher MonadHandle "withFile" IO
                 (Either IOError (Either Redact.Error ()))
         )
-        |=> \(WithFile "test.md" ReadMode _action) -> pure $ Left err
+        |=> \(WithFile _path _mode _action) -> pure $ Left err
       Redact.fileToTerminal redactSGRs "test.md"
     err' @=? Redact.IOError err
 
@@ -338,10 +338,10 @@ testFileToTerminalStrictIOError = testCase "error_io" $ do
 testFileToTerminalLenientOK :: TestTree
 testFileToTerminalLenientOK = testCase "OK" . runMockT $ do
     expect $
-      ( WithFile_ anything anything anything
+      ( WithFile_ (eq "test.md") (eq ReadMode) anything
           :: Matcher MonadHandle "withFile" IO (Either IOError ())
       )
-      |=> \(WithFile "test.md" ReadMode _action) -> pure $ Right ()
+      |=> \(WithFile _path _mode _action) -> pure $ Right ()
     assertSuccess =<< Redact.fileToTerminal' redactSGRs "test.md"
 
 ------------------------------------------------------------------------------
@@ -351,10 +351,10 @@ testFileToTerminalLenientIOError = testCase "error_io" $ do
     let err = userError "nope"
     Left err' <- runMockT $ do
       expect $
-        ( WithFile_ anything anything anything
+        ( WithFile_ (eq "test.md") (eq ReadMode) anything
             :: Matcher MonadHandle "withFile" IO (Either IOError ())
         )
-        |=> \(WithFile "test.md" ReadMode _action) -> pure $ Left err
+        |=> \(WithFile _path _mode _action) -> pure $ Left err
       Redact.fileToTerminal' redactSGRs "test.md"
     err' @=? Redact.IOError err
 
