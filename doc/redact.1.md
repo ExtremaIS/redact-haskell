@@ -21,7 +21,7 @@ hyphenate: false
 
 # DESCRIPTION
 
-`redact` is a utility for hiding secret text on the terminal.
+Redact is a utility for hiding secret text on the terminal.
 
 It is designed to work with Markdown syntax.  Inline code (text enclosed in
 backticks) and code blocks that are fenced with backticks are hidden.  Note
