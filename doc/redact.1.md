@@ -39,7 +39,7 @@ Be sure to test it in your terminal before relying on it.
 -h, \--help
 :   show help and exit
 
---version
+\--version
 :   show version and exit
 
 -c, \--color *COLOR*
@@ -67,24 +67,41 @@ Be sure to test it in your terminal before relying on it.
 -f, \--file *PATH*
 :   input file (default: `STDIN`)
 
---colors
+-l, \--lenient
+:   do not exit on parse errors
+
+    The following values are supported for the environment variable and
+    configuration:
+
+    * `true`
+    * `false`
+
+\--colors
 :   redact test text using all possible colors
 
---test
+\--test
 :   redact test text using the configured color
 
 # CONFIGURATION
 
 Settings priority:
 
-1. command-line options (`--color`, `--intensity`)
-2. environment variables (`REDACT_COLOR`, `REDACT_INTENSITY`)
+1. command-line options
+    * `--color`
+    * `--intensity`
+    * `--lenient`
+2. environment variables
+    * `REDACT_COLOR`=`COLOR`
+    * `REDACT_INTENSITY`=`INTENSITY`
+    * `REDACT_LENIENT`=`LENIENT`
 3. settings file (`redact.ini`)
     * `color=COLOR`
     * `intensity=INTENSITY`
+    * `lenient=LENIENT`
 4. defaults
     * color: `red`
     * intensity: `vivid`
+    * lenient: `false`
 
 # EXIT CODES
 
