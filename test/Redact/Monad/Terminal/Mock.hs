@@ -21,6 +21,16 @@ import TestLib
 
 ------------------------------------------------------------------------------
 
+testReset :: TestTree
+testReset = testCase "reset" . runMockT $ do
+    inSequence
+      [ expect $ SetSGR resetSGRs |-> ()
+      , expect $ PutStrLn "" |-> ()
+      ]
+    RMT.reset
+
+------------------------------------------------------------------------------
+
 testPutLinesNone :: TestTree
 testPutLinesNone = testCase "none" . runMockT $ RMT.putLines redactSGRs []
 
@@ -198,7 +208,8 @@ testPutLinesRedactEnd = testCase "redact_end" . runMockT $ do
 
 tests :: TestTree
 tests = testGroup "Redact.Monad.Terminal:Mock"
-    [ testGroup "putLines"
+    [ testReset
+    , testGroup "putLines"
         [ testPutLinesNone
         , testPutLinesNormalEmpty
         , testPutLinesNormalStet

@@ -15,6 +15,7 @@ module Redact.Monad.Terminal
     -- * API
   , redactSGRs
   , resetSGRs
+  , reset
   , putLines
     -- * Internal
   , initialize
@@ -81,6 +82,14 @@ redactSGRs color intensity =
 -- @since 0.4.0.0
 resetSGRs :: [Term.SGR]
 resetSGRs = [Term.Reset]
+
+------------------------------------------------------------------------------
+
+-- | Reset the terminal color mode and go to the next line
+--
+-- @since 0.4.0.0
+reset :: MonadTerminal m => m ()
+reset = setSGR resetSGRs >> putStrLn ""
 
 ------------------------------------------------------------------------------
 
