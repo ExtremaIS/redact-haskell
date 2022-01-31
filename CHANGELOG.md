@@ -26,6 +26,14 @@ following conventions:
 
 ## Unreleased
 
+### Breaking
+
+* Rewrite using a library
+
+### Non-Breaking
+
+* Add tests
+
 ## 0.3.0.0 (2021-06-25)
 
 ### Breaking

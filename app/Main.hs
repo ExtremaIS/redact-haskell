@@ -8,6 +8,7 @@
 -- See the README for details.
 ------------------------------------------------------------------------------
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Main (main) where
@@ -21,19 +22,16 @@ import Text.PrettyPrint.ANSI.Leijen (Doc)
 
 -- https://hackage.haskell.org/package/base
 import Control.Applicative ((<|>), optional)
-import Control.Monad (foldM, forM_, unless)
+import Control.Monad (foldM, forM_)
 import Data.Bifunctor (Bifunctor(bimap))
 import Data.Char (isSpace, toLower)
 import Data.Functor.Identity (Identity(runIdentity))
 import Data.List (dropWhileEnd, intercalate)
 import Data.Maybe (fromMaybe, isJust)
-import Data.Version (showVersion)
+import Data.String (fromString)
 import System.Environment (lookupEnv)
 import System.Exit (ExitCode(ExitFailure), exitWith)
-import System.IO
-  ( Handle, IOMode(ReadMode), hIsEOF, hGetLine, hPutStrLn, stderr, stdin
-  , withFile
-  )
+import System.IO (hPutStrLn, stderr, stdin)
 
 -- https://hackage.haskell.org/package/directory
 import qualified System.Directory as Dir
@@ -41,8 +39,10 @@ import qualified System.Directory as Dir
 -- https://hackage.haskell.org/package/optparse-applicative
 import qualified Options.Applicative as OA
 
--- (redact:cabal)
-import qualified Paths_redact as Project
+-- (redact)
+import qualified Redact as Project
+import qualified Redact.Markdown as Redact
+import qualified Redact.Monad.Terminal as RedactTerm
 
 -- (redact:executable)
 import qualified LibOA
@@ -160,7 +160,7 @@ parseArgs = OA.execParser pinfo
           ]
 
     version :: String
-    version = "redact-haskell " ++ showVersion Project.version
+    version = "redact-haskell " ++ Project.version
 
     options :: OA.Parser (Options Maybe)
     options =
@@ -309,74 +309,17 @@ strip = dropWhile isSpace . dropWhileEnd isSpace
 ------------------------------------------------------------------------------
 -- $Implementation
 
-redactLine :: Term.Color -> Term.ColorIntensity -> String -> IO ()
-redactLine color intensity = go
-  where
-    go :: String -> IO ()
-    go "" = putStrLn ""
-    go ('`' : s) = do
-      putStr "`"
-      let (hiddenText, rest) = break (== '`') s
-      unless (null hiddenText) $ do
-        Term.setSGR
-          [ Term.SetColor Term.Foreground intensity color
-          , Term.SetColor Term.Background intensity color
-          ]
-        putStr hiddenText
-        Term.setSGR [Term.Reset]
-      case rest of
-        '`' : s' -> putStr "`" >> go s'
-        _emptyString -> putStrLn ""
-    go s = do
-      let (clearText, rest) = break (== '`') s
-      putStr clearText
-      go rest
-
-runHandle :: Term.Color -> Term.ColorIntensity -> Handle -> IO ()
-runHandle color intensity handle = go =<< hIsEOF handle
-  where
-    go :: Bool -> IO ()
-    go True  = return ()
-    go False = do
-      s <- hGetLine handle
-      if getFenceLength s >= 3
-        then do
-          putStrLn s
-          Term.setSGR
-            [ Term.SetColor Term.Foreground intensity color
-            , Term.SetColor Term.Background intensity color
-            ]
-          goFence s =<< hIsEOF handle
-        else do
-          redactLine color intensity s
-          go =<< hIsEOF handle
-
-    getFenceLength :: String -> Int
-    getFenceLength s
-      | all (== '`') s = length s
-      | otherwise      = 0
-
-    goFence :: String -> Bool -> IO ()
-    goFence _     True  = Term.setSGR [Term.Reset]
-    goFence fence False = do
-      s <- hGetLine handle
-      if s == fence
-        then do
-          Term.setSGR [Term.Reset]
-          putStrLn s
-          go =<< hIsEOF handle
-        else do
-          putStrLn s
-          goFence fence =<< hIsEOF handle
-
-runFile :: Term.Color -> Term.ColorIntensity -> FilePath -> IO ()
-runFile color intensity path =
-    withFile path ReadMode $ runHandle color intensity
-
 runTest :: Term.Color -> Term.ColorIntensity -> IO ()
-runTest color intensity = redactLine color intensity $
-    (toLower <$> show color) ++ " " ++ (toLower <$> show intensity) ++
-    ": `hidden`"
+runTest color intensity =
+    RedactTerm.putLines (RedactTerm.redactSGRs color intensity)
+      [ Redact.NormalLine
+          [ Redact.Stet . fromString $
+              (toLower <$> show color) ++ " " ++
+              (toLower <$> show intensity) ++ ": `"
+          , Redact.Redact "hidden"
+          , Redact.Stet "`"
+          ]
+      ]
 
 runColors :: IO ()
 runColors =
@@ -397,8 +340,10 @@ main = do
     Options{..} <- getOptions
     let color     = runIdentity optColor
         intensity = runIdentity optIntensity
+        sgrs      = RedactTerm.redactSGRs color intensity
     case (optColors, optTest, optFile) of
       (True, _,    _)         -> runColors
       (_,    True, _)         -> runTest color intensity
-      (_,    _,    Nothing)   -> runHandle color intensity stdin
-      (_,    _,    Just path) -> runFile color intensity path
+      (_,    _,    Nothing)   -> Redact.handleToTerminal' sgrs stdin
+      (_,    _,    Just path) ->
+        either (errorExit . show) return =<<  Redact.fileToTerminal' sgrs path

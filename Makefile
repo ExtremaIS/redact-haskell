@@ -152,6 +152,17 @@ clean-all: # clean package and remove artifacts
 > @rm -f result*
 .PHONY: clean-all
 
+coverage: hr
+coverage: # run tests with code coverage *
+ifeq ($(MODE), cabal)
+> cabal v2-test $(CABAL_ARGS) \
+>   --enable-coverage --enable-tests --test-show-details=always
+else
+> stack test $(STACK_ARGS) --coverage
+> stack hpc report .
+endif
+.PHONY: coverage
+
 deb: # build .deb package for VERSION in a Debian container
 > $(eval VERSION := $(call get_version))
 > $(eval SRC := $(PROJECT)-$(VERSION).tar.xz)
@@ -173,6 +184,15 @@ deb-test: # run a Debian container to test .deb package for VERSION
 >   $(TEST_DEB_CONTAINER) \
 >   /bin/bash
 .PHONY: deb-test
+
+doc-api: hr
+doc-api: # build API documentation *
+ifeq ($(MODE), cabal)
+> cabal v2-haddock $(CABAL_ARGS)
+else
+> stack haddock $(STACK_ARGS)
+endif
+.PHONY: doc-api
 
 grep: # grep all non-hidden files for expression E
 > $(eval E:= "")
@@ -312,6 +332,16 @@ rpm-test: # run a Fedora container to test .rpm package for VERSION
 >   $(TEST_RPM_CONTAINER) \
 >   /bin/bash
 .PHONY: rpm-test
+
+sdist: # create source tarball for Hackage
+> $(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
+> @test "${BRANCH}" = "main" || $(call die,"not in main branch")
+ifeq ($(MODE), cabal)
+> @cabal sdist
+else
+> @stack sdist
+endif
+.PHONY: sdist
 
 source-git: # create source tarball of git TREE
 > $(eval TREE := "HEAD")
