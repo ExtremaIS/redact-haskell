@@ -30,6 +30,7 @@ following conventions:
 
 * Rewrite using a library
 * Add `--lenient` flag, with strict behavior by default
+* Reset colors on exceptions, including Control+C
 
 ### Non-Breaking
 

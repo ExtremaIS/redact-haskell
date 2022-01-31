@@ -22,6 +22,7 @@ import Text.PrettyPrint.ANSI.Leijen (Doc)
 
 -- https://hackage.haskell.org/package/base
 import Control.Applicative ((<|>), optional)
+import Control.Exception (SomeException, handle)
 import Control.Monad (foldM, forM_, when)
 import Data.Bifunctor (Bifunctor(bimap))
 import Data.Char (isSpace, toLower)
@@ -396,7 +397,7 @@ errorExit message = do
     exitWith $ ExitFailure 1
 
 main :: IO ()
-main = do
+main = handle onAnyException $ do
     Options{..} <- getOptions
     let color     = runIdentity optColor
         intensity = runIdentity optIntensity
@@ -411,3 +412,6 @@ main = do
       Nothing
         | lenient   -> Right <$> Redact.handleToTerminal' sgrs stdin
         | otherwise ->           Redact.handleToTerminal  sgrs stdin
+  where
+    onAnyException :: SomeException -> IO ()
+    onAnyException _e = RedactTerm.reset
