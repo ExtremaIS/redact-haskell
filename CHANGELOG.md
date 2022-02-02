@@ -35,6 +35,7 @@ following conventions:
 ### Non-Breaking
 
 * Add tests
+* Bump `optparse-applicative` dependency version upper bound
 
 ## 0.3.0.0 (2021-06-25)
 
