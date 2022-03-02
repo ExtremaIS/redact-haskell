@@ -2,16 +2,13 @@
 
 ## Functionality
 
-* Refactor to testable library and separate executable
-
 ## Tests
-
-* Add tests
 
 ## Documentation
 
 ## Project
 
+* Nix configuration that works with Cabal conditional compilation
 * Arch `PKGBUILD`
 * Windows executable
 * Mac OS executable

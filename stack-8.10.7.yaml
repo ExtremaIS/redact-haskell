@@ -1,11 +1,8 @@
-resolver: lts-16.31
+resolver: lts-18.27
 
 packages:
   - .
 
 extra-deps:
-  - constraints-0.13.2
   - explainable-predicates-0.1.2.1
   - HMock-0.5.1.0
-  - syb-0.7.2.1
-  - unliftio-0.2.20

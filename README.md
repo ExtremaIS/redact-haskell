@@ -1,24 +1,29 @@
-# redact
+# Redact
 
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![GitHub CI](https://github.com/ExtremaIS/redact-haskell/workflows/CI/badge.svg?branch=main)](https://github.com/ExtremaIS/redact-haskell/actions)
+[![Hackage](https://img.shields.io/hackage/v/redact.svg)](https://hackage.haskell.org/package/redact)
+[![Stackage LTS](https://stackage.org/package/redact/badge/lts)](https://stackage.org/package/redact)
+[![Stackage Nightly](https://stackage.org/package/redact/badge/nightly)](https://stackage.org/nightly/package/redact)
 
 * [Overview](#overview)
-* [Requirements](#requirements)
-* [Installation](#installation)
-    * [Installation From Source](#installation-from-source)
-    * [`.deb` Package Installation](#deb-package-installation)
-    * [`.rpm` Package Installation](#rpm-package-installation)
-* [Usage](#usage)
+* [CLI](#cli)
+    * [Requirements](#requirements)
+    * [Installation](#installation)
+        * [`.deb` Package Installation](#deb-package-installation)
+        * [`.rpm` Package Installation](#rpm-package-installation)
+        * [Installation From Hackage](#installation-from-hackage)
+        * [Installation From Stackage](#installation-from-stackage)
+    * [Usage](#usage)
 * [Project](#project)
     * [Links](#links)
-    * [Releases](#releases)
+    * [Tags](#tags)
     * [Contribution](#contribution)
     * [License](#license)
 
 ## Overview
 
-`redact` is a utility for hiding secret text on the terminal.
+Redact is a utility for hiding secret text on the terminal.
 
 It is designed to work with Markdown syntax.  Inline code (text enclosed in
 backticks) and code blocks that are fenced with backticks are hidden.  Note
@@ -31,51 +36,61 @@ and becomes visible in other terminals.
 
 Be sure to test it in your terminal before relying on it.
 
-## Requirements
+## CLI
 
-`redact` has only been tested on Linux.  Testing on Windows 10 and macOS will
+### Requirements
+
+Redact has only been tested on Linux.  Testing on Windows 10 and macOS will
 be added in a future release.
 
-## Installation
-
-### Installation From Source
-
-`redact` can be built from source using [Stack][].  For example, you can
-install the latest release (to `/usr/bin` on Linux) as follows:
-
-```
-$ git clone https://github.com/ExtremaIS/redact-haskell.git
-$ cd redact-haskell
-$ make
-$ sudo make install
-```
-
-[Stack]: <https://www.haskellstack.org>
+### Installation
 
 #### `.deb` Package Installation
 
 Check the [Releases][] page for `.deb` packages.
 
+[Releases]: <https://github.com/ExtremaIS/redact-haskell/releases>
+
 #### `.rpm` Package Installation
 
 Check the [Releases][] page for `.rpm` packages.
 
-[Releases]: <https://github.com/ExtremaIS/redact-haskell/releases>
+#### Installation From Hackage
 
-## Usage
+Install PhatSort from [Hackage][] using [Cabal][] as follows:
+
+```
+$ cabal v2-install redact
+```
+
+[Hackage]: <https://hackage.haskell.org/package/redact>
+[Cabal]: <https://www.haskell.org/cabal/>
+
+#### Installation From Stackage
+
+Install PhatSort from [Stackage][] using [Stack][] as follows:
+
+```
+$ stack install redact
+```
+
+[Stackage]: <https://www.stackage.org/package/redact>
+[Stack]: <https://haskellstack.org/>
+
+### Usage
 
 See the [`redact` man page](doc/redact.1.md) for usage information.
 
 ## Project
 
-This project implements a utility program.  There are no plans to expose a
-library or put the package on Hackage.
-
 ### Links
 
+* Hackage: <https://hackage.haskell.org/package/redact>
+* Stackage: <https://www.stackage.org/package/redact>
 * GitHub: <https://github.com/ExtremaIS/redact-haskell>
+* GitHub Actions CI: <https://github.com/ExtremaIS/redact-haskell/actions>
 
-### Releases
+### Tags
 
 All releases are tagged in the `main` branch.  Release tags are signed using
 the

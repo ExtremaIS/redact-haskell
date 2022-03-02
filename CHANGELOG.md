@@ -24,6 +24,19 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.4.0.0 (2022-03-02)
+
+### Breaking
+
+* Rewrite using a library
+* Add `--lenient` flag, with strict behavior by default
+* Reset colors on exceptions, including Control+C
+
+### Non-Breaking
+
+* Add tests
+* Bump `optparse-applicative` dependency version upper bound
+
 ## 0.3.0.0 (2021-06-25)
 
 ### Breaking
