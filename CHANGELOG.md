@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Non-Breaking
+
+* Fix typo in CLI error message
+
 ## 0.4.0.0 (2022-03-02)
 
 ### Breaking

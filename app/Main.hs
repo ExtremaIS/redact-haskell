@@ -81,7 +81,7 @@ parseColor
   :: String
   -> Either String Term.Color
 parseColor s
-    = maybe (Left $ "uknown color: " ++ s) Right
+    = maybe (Left $ "unknown color: " ++ s) Right
     $ lookup (toLower <$> s) colorMap
 
 ------------------------------------------------------------------------------
