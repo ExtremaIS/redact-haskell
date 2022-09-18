@@ -23,9 +23,9 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: latest
       - name: Build
-        run: cabal new-build --enable-tests --enable-benchmarks
+        run: cabal new-build --project-file=cabal-${{ matrix.ghc }}.project --enable-tests --enable-benchmarks
       - name: Test
-        run: cabal new-test --enable-tests
+        run: cabal new-test --project-file=cabal-${{ matrix.ghc }}.project --enable-tests
 
   stack:
     name: "Stack: GHC ${{ matrix.ghc }}"
