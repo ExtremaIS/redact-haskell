@@ -28,6 +28,7 @@ following conventions:
 
 ### Non-Breaking
 
+* Bump `ansi-terminal` dependency version upper bound
 * Fix typo in CLI error message
 
 ## 0.4.0.0 (2022-03-02)

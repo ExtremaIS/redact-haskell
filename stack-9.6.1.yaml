@@ -4,7 +4,7 @@ packages:
   - .
 
 extra-deps:
-  - ansi-terminal-0.11.5
+  - ansi-terminal-1.0
   - ansi-terminal-types-0.11.5
   - ansi-wl-pprint-0.6.9
   - async-2.2.4
