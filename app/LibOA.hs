@@ -41,8 +41,9 @@ module LibOA
     -- ** Compatibility
   , Doc
   , (<$$>)
-  , docEmpty
-  , docString
+  , empty
+  , string
+  , vcat
   ) where
 
 -- https://hackage.haskell.org/package/ansi-wl-pprint
@@ -147,20 +148,20 @@ section = section' 2
 
 -- | Create a section with a title and body indented by specified spaces
 section' :: Int -> String -> Doc -> Doc
-section' numSpaces title = (docString title <$$>) . Doc.indent numSpaces
+section' numSpaces title = (string title <$$>) . Doc.indent numSpaces
 
 -- | Create a table, with formatting
 table :: Int -> [[(String, Doc -> Doc)]] -> Doc
 table sep rows = Doc.vcat $
-    map (fromMaybe docEmpty . foldr go Nothing . zip lengths) rows
+    map (fromMaybe empty . foldr go Nothing . zip lengths) rows
   where
     lengths :: [Int]
     lengths = map ((+) sep . maximum . map (length . fst)) $ transpose rows
 
     go :: (Int, (String, Doc -> Doc)) -> Maybe Doc -> Maybe Doc
     go (len, (s, f)) = Just . \case
-      Just doc -> Doc.fill len (f $ docString s) <> doc
-      Nothing  -> f $ docString s
+      Just doc -> Doc.fill len (f $ string s) <> doc
+      Nothing  -> f $ string s
 
 -- | Create a table, without formatting
 table_ :: Int -> [[String]] -> Doc
@@ -180,16 +181,19 @@ l <$$> r = l <> Doc.line <> r
 (<$$>) = (Doc.<$$>)
 #endif
 
-docEmpty :: Doc
+empty :: Doc
 #if MIN_VERSION_optparse_applicative (0,18,0)
-docEmpty = Doc.emptyDoc
+empty = Doc.emptyDoc
 #else
-docEmpty = Doc.empty
+empty = Doc.empty
 #endif
 
-docString :: String -> Doc
+string :: String -> Doc
 #if MIN_VERSION_optparse_applicative (0,18,0)
-docString = Doc.pretty
+string = Doc.pretty
 #else
-docString = Doc.string
+string = Doc.string
 #endif
+
+vcat :: [Doc] -> Doc
+vcat = Doc.vcat
