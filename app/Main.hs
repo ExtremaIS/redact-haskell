@@ -8,8 +8,13 @@
 -- See the README for details.
 ------------------------------------------------------------------------------
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+
+#if MIN_VERSION_ansi_wl_pprint (1,0,2)
+{-# OPTIONS_GHC -Wno-warnings-deprecations #-}
+#endif
 
 module Main (main) where
 
@@ -18,7 +23,6 @@ import qualified System.Console.ANSI as Term
 
 -- https://hackage.haskell.org/package/ansi-wl-pprint
 import qualified Text.PrettyPrint.ANSI.Leijen as Doc
-import Text.PrettyPrint.ANSI.Leijen (Doc)
 
 -- https://hackage.haskell.org/package/base
 import Control.Applicative ((<|>), optional)
@@ -238,7 +242,7 @@ options = Options
       , OA.help "redact test text using the configured color"
       ]
 
-footer :: Doc
+footer :: LibOA.Doc
 footer = LibOA.vspace
     [ colorsHelp
     , intensitiesHelp
@@ -246,18 +250,18 @@ footer = LibOA.vspace
     , settingsHelp
     ]
   where
-    colorsHelp :: Doc
+    colorsHelp :: LibOA.Doc
     colorsHelp = LibOA.section "COLOR values:" . Doc.text $
       intercalate ", " (fst <$> colorMap)
 
-    intensitiesHelp :: Doc
+    intensitiesHelp :: LibOA.Doc
     intensitiesHelp = LibOA.section "INTENSITY values:" . Doc.text $
       intercalate ", " (fst <$> intensityMap)
 
-    lenientHelp :: Doc
+    lenientHelp :: LibOA.Doc
     lenientHelp = LibOA.section "LENIENT values:" $ Doc.text "true, false"
 
-    settingsHelp :: Doc
+    settingsHelp :: LibOA.Doc
     settingsHelp = LibOA.section "Settings priority:" . Doc.vcat $
       [ Doc.text "1. command-line options" Doc.<$$> Doc.indent 5
           ( Doc.vcat

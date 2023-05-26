@@ -29,6 +29,7 @@ following conventions:
 ### Non-Breaking
 
 * Bump `ansi-terminal` dependency version upper bound
+* Bump `ansi-wl-pprint` dependency version upper bound
 * Adjust dependency constraints to match tested versions
 * Fix typo in CLI error message
 

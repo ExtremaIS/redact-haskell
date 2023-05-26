@@ -7,7 +7,7 @@ constraints:
     ansi-terminal == 1.0
 
     -- https://hackage.haskell.org/package/ansi-wl-pprint
-  , ansi-wl-pprint == 0.6.9
+  , ansi-wl-pprint == 1.0.2
 
     -- https://hackage.haskell.org/package/base
     -- GHC boot library
@@ -24,7 +24,7 @@ constraints:
   , HMock == 0.5.1.0
 
     -- https://hackage.haskell.org/package/optparse-applicative
-  , optparse-applicative == 0.17.0.0
+  , optparse-applicative == 0.17.1.0
 
     -- https://hackage.haskell.org/package/tasty
   , tasty == 1.4.3
