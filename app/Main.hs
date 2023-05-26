@@ -12,8 +12,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
+#if defined(MIN_VERSION_ansi_wl_pprint)
 #if MIN_VERSION_ansi_wl_pprint (1,0,2)
 {-# OPTIONS_GHC -Wno-warnings-deprecations #-}
+#endif
 #endif
 
 module Main (main) where
@@ -22,7 +24,9 @@ module Main (main) where
 import qualified System.Console.ANSI as Term
 
 -- https://hackage.haskell.org/package/ansi-wl-pprint
+#if !MIN_VERSION_optparse_applicative (0,18,0)
 import qualified Text.PrettyPrint.ANSI.Leijen as Doc
+#endif
 
 -- https://hackage.haskell.org/package/base
 import Control.Applicative ((<|>), optional)
@@ -43,6 +47,11 @@ import qualified System.Directory as Dir
 
 -- https://hackage.haskell.org/package/optparse-applicative
 import qualified Options.Applicative as OA
+
+-- https://hackage.haskell.org/package/prettyprinter
+#if MIN_VERSION_optparse_applicative (0,18,0)
+import qualified Prettyprinter as Doc
+#endif
 
 -- (redact)
 import qualified Redact as Project
@@ -251,47 +260,43 @@ footer = LibOA.vspace
     ]
   where
     colorsHelp :: LibOA.Doc
-    colorsHelp = LibOA.section "COLOR values:" . Doc.text $
+    colorsHelp = LibOA.section "COLOR values:" . LibOA.docString $
       intercalate ", " (fst <$> colorMap)
 
     intensitiesHelp :: LibOA.Doc
-    intensitiesHelp = LibOA.section "INTENSITY values:" . Doc.text $
+    intensitiesHelp = LibOA.section "INTENSITY values:" . LibOA.docString $
       intercalate ", " (fst <$> intensityMap)
 
     lenientHelp :: LibOA.Doc
-    lenientHelp = LibOA.section "LENIENT values:" $ Doc.text "true, false"
+    lenientHelp =
+      LibOA.section "LENIENT values:" $ LibOA.docString "true, false"
 
     settingsHelp :: LibOA.Doc
     settingsHelp = LibOA.section "Settings priority:" . Doc.vcat $
-      [ Doc.text "1. command-line options" Doc.<$$> Doc.indent 5
-          ( Doc.vcat
-              [ Doc.text "--color"
-              , Doc.text "--intensity"
-              , Doc.text "--lenient"
-              ]
-          )
-      , Doc.text "2. environment variables" Doc.<$$> Doc.indent 5
-          ( Doc.vcat
-              [ Doc.text $ envColorName ++ "=COLOR"
-              , Doc.text $ envIntensityName ++ "=INTENSITY"
-              , Doc.text $ envLenientName ++ "=LENIENT"
-              ]
-          )
-      , Doc.text ("3. settings file (" ++ configFileName ++ ")") Doc.<$$>
-          Doc.indent 5
-            ( Doc.vcat
-                [ Doc.text "color=COLOR"
-                , Doc.text "intensity=INTENSITY"
-                , Doc.text "lenient=LENIENT"
-                ]
-            )
-      , Doc.text "4. defaults" Doc.<$$> Doc.indent 5
-          ( LibOA.table_ 2
-              [ ["color:", toLower <$> show defaultColor]
-              , ["intensity:", toLower <$> show defaultIntensity]
-              , ["lenient:", toLower <$> show defaultLenient]
-              ]
-          )
+      [ LibOA.section' 5 "1. command-line options" $
+          Doc.vcat
+            [ LibOA.docString "--color"
+            , LibOA.docString "--intensity"
+            , LibOA.docString "--lenient"
+            ]
+      , LibOA.section' 5 "2. environment variables" $
+          Doc.vcat
+            [ LibOA.docString $ envColorName ++ "=COLOR"
+            , LibOA.docString $ envIntensityName ++ "=INTENSITY"
+            , LibOA.docString $ envLenientName ++ "=LENIENT"
+            ]
+      , LibOA.section' 5 ("3. settings file (" ++ configFileName ++ ")") $
+          Doc.vcat
+            [ LibOA.docString "color=COLOR"
+            , LibOA.docString "intensity=INTENSITY"
+            , LibOA.docString "lenient=LENIENT"
+            ]
+      , LibOA.section' 5 "4. defaults" $
+          LibOA.table_ 2
+            [ ["color:", toLower <$> show defaultColor]
+            , ["intensity:", toLower <$> show defaultIntensity]
+            , ["lenient:", toLower <$> show defaultLenient]
+            ]
       ]
 
 ------------------------------------------------------------------------------
