@@ -89,6 +89,7 @@ See the [`redact` man page][] for usage information.
 
 * Hackage: <https://hackage.haskell.org/package/redact>
 * Stackage: <https://www.stackage.org/package/redact>
+* Flora: <https://flora.pm/packages/@hackage/redact>
 * GitHub: <https://github.com/ExtremaIS/redact-haskell>
 * GitHub Actions CI: <https://github.com/ExtremaIS/redact-haskell/actions>
 
