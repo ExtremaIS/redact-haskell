@@ -1,0 +1,7 @@
+packages: redact.cabal
+
+allow-newer:
+    HMock-0.5.1.0:base
+  , HMock-0.5.1.0:template-haskell
+  , explainable-predicates-0.1.2.2:base
+  , explainable-predicates-0.1.2.2:template-haskell

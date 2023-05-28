@@ -79,7 +79,9 @@ $ stack install redact
 
 ### Usage
 
-See the [`redact` man page](doc/redact.1.md) for usage information.
+See the [`redact` man page][] for usage information.
+
+[`redact` man page]: <doc/redact.1.md>
 
 ## Project
 
@@ -87,14 +89,32 @@ See the [`redact` man page](doc/redact.1.md) for usage information.
 
 * Hackage: <https://hackage.haskell.org/package/redact>
 * Stackage: <https://www.stackage.org/package/redact>
+* Flora: <https://flora.pm/packages/@hackage/redact>
 * GitHub: <https://github.com/ExtremaIS/redact-haskell>
 * GitHub Actions CI: <https://github.com/ExtremaIS/redact-haskell/actions>
+
+### Branches
+
+The `main` branch is reserved for releases.  It may be considered stable, and
+`HEAD` is always the latest release.
+
+The `develop` branch is the primary development branch.  It contains changes
+that have not yet been released, and it is not necessarily stable.
+
+[Hackage revisions][] are made for metadata changes, such as relaxation of
+constraints when new versions of dependencies are released.  The
+`redact.cabal` metadata in the `main` branch may therefore not match that of
+Hackage.  The `redact.cabal` metadata in the `develop` branch may match,
+*unless* work is being done on a new release that contains other changes.
+
+[Hackage revisions]: <https://github.com/haskell-infra/hackage-trustees/blob/master/revisions-information.md#hackage-metadata-revisions--what-they-are-how-they-work>
 
 ### Tags
 
 All releases are tagged in the `main` branch.  Release tags are signed using
-the
-[`security@extrema.is` GPG key](http://keys.gnupg.net/pks/lookup?op=vindex&fingerprint=on&search=0x1D484E4B4705FADF).
+the [`security@extrema.is` GPG key][].
+
+[`security@extrema.is` GPG key]: <https://keyserver.ubuntu.com/pks/lookup?search=0x1D484E4B4705FADF&fingerprint=on&op=index>
 
 ### Contribution
 
@@ -105,6 +125,8 @@ Issues may also be submitted via email to <bugs@extrema.is>.
 
 ### License
 
-This project is released under the
-[MIT License](https://opensource.org/licenses/MIT) as specified in the
-[`LICENSE`](LICENSE) file.
+This project is released under the [MIT License][] as specified in the
+[`LICENSE`][] file.
+
+[MIT License]: <https://opensource.org/licenses/MIT>
+[`LICENSE`]: <LICENSE>
