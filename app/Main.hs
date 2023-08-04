@@ -44,7 +44,7 @@ import qualified System.Directory as Dir
 import qualified Options.Applicative as OA
 
 -- (redact)
-import qualified Redact as Project
+import qualified Redact
 import qualified Redact.Markdown as Redact
 import qualified Redact.Monad.Terminal as RedactTerm
 
@@ -177,16 +177,13 @@ getOptions = do
 parseArgs :: IO (Options Maybe)
 parseArgs
     = OA.execParser
-    . OA.info (LibOA.helper <*> LibOA.versioner version <*> options)
+    . OA.info (LibOA.helper <*> LibOA.versioner Redact.version <*> options)
     $ mconcat
         [ OA.fullDesc
         , OA.progDesc "hide secret text on the terminal"
         , OA.failureCode 2
         , OA.footerDoc $ Just footer
         ]
-  where
-    version :: String
-    version = "redact-haskell " ++ Project.version
 
 options :: OA.Parser (Options Maybe)
 options = Options
