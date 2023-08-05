@@ -1,4 +1,4 @@
-resolver: nightly-2023-08-04
+resolver: nightly-2023-08-05
 
 packages:
   - .
@@ -6,9 +6,3 @@ packages:
 flags:
   redact:
     optparse-applicative_ge_0_18: true
-
-extra-deps:
-  - explainable-predicates-0.1.2.3
-  - HMock-0.5.1.0
-
-allow-newer: true
