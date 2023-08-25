@@ -1,9 +1,7 @@
-resolver: lts-21.6
+resolver: lts-21.8
 
 packages:
   - .
 
 extra-deps:
   - HMock-0.5.1.0
-
-allow-newer: true
