@@ -1,0 +1,7 @@
+resolver: lts-21.22
+
+packages:
+  - .
+
+extra-deps:
+  - HMock-0.5.1.2
