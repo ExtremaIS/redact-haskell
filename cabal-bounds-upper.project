@@ -34,4 +34,4 @@ constraints:
 
     -- https://hackage.haskell.org/package/text
     -- (GHC boot library from GHC 8.4)
-  , text == 2.0.2
+  , text == 2.1

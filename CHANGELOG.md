@@ -29,6 +29,7 @@ following conventions:
 ### Non-Breaking
 
 * Bump `tasty` dependency version upper bound
+* Bump `text` dependency version upper bound
 
 ## 0.5.0.0 (2023-05-28)
 
