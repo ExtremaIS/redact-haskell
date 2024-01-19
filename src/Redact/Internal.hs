@@ -2,7 +2,7 @@
 -- |
 -- Module      : Redact.Internal
 -- Description : internal functions
--- Copyright   : Copyright (c) 2020-2023 Travis Cardwell
+-- Copyright   : Copyright (c) 2020-2024 Travis Cardwell
 -- License     : MIT
 ------------------------------------------------------------------------------
 
