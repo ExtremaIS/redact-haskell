@@ -1,4 +1,4 @@
-cabal-version:      2.2
+cabal-version:      2.4
 name:               redact
 version:            0.5.0.0
 synopsis:           hide secret text on the terminal
@@ -21,8 +21,7 @@ extra-doc-files:
   README.md
 
 tested-with:
-  GHC ==8.4.4
-   || ==8.6.5
+  GHC ==8.6.5
    || ==8.8.4
    || ==8.10.7
    || ==9.0.2
@@ -55,8 +54,8 @@ library
   autogen-modules:
       Paths_redact
   build-depends:
-      ansi-terminal >=0.8.2 && <1.2
-    , base >=4.11.1.0 && <4.20
+      ansi-terminal >=0.9.1 && <1.2
+    , base >=4.12.0.0 && <4.20
     , text >=1.2.3.1 && <2.2
   default-language: Haskell2010
   default-extensions:
@@ -71,7 +70,7 @@ executable redact
   build-depends:
       ansi-terminal
     , base
-    , directory >=1.3.1.5 && <1.4
+    , directory >=1.3.3.0 && <1.4
     , redact
   if flag(optparse-applicative_ge_0_18)
     build-depends:
@@ -79,7 +78,7 @@ executable redact
       , prettyprinter >=1.7.1 && <1.8
   else
     build-depends:
-        ansi-wl-pprint >=0.6.8.2 && <1.1
+        ansi-wl-pprint >=0.6.9 && <1.1
       , optparse-applicative >=0.14.3.0 && <0.18
   default-language: Haskell2010
   ghc-options: -Wall
@@ -93,8 +92,8 @@ test-suite redact-test
   build-depends:
       base
     , redact
-    , tasty >=1.1.0.4 && <1.6
-    , tasty-hunit >=0.10.0.1 && <0.11
+    , tasty >=1.2.3 && <1.6
+    , tasty-hunit >=0.10.0.2 && <0.11
   if impl(ghc >= 8.8.1)
     other-modules:
         Redact.Markdown.Mock
