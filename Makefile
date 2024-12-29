@@ -11,15 +11,15 @@ MODE ?= stack
 DESTDIR ?=
 PREFIX  ?= /usr/local
 
-DEB_CONTAINER    ?= extremais/pkg-debian-stack:bullseye
-RPM_CONTAINER    ?= extremais/pkg-fedora-stack:37
+DEB_CONTAINER    ?= extremais/pkg-debian-stack:bookworm
+RPM_CONTAINER    ?= extremais/pkg-fedora-stack:41
 MAINTAINER_NAME  ?= Travis Cardwell
 MAINTAINER_EMAIL ?= travis.cardwell@extrema.is
 
-TEST_DEB_CONTAINER ?= debian:bullseye
+TEST_DEB_CONTAINER ?= debian:bookworm
 TEST_DEB_ARCH      ?= amd64
-TEST_RPM_CONTAINER ?= fedora:37
-TEST_RPM_OS        ?= fc37
+TEST_RPM_CONTAINER ?= fedora:41
+TEST_RPM_OS        ?= fc41
 TEST_RPM_ARCH      ?= x86_64
 
 ##############################################################################
@@ -198,7 +198,6 @@ help: # show this help
 > @echo "Stack mode (MODE=stack)"
 > @echo "  * Set CONFIG to specify a stack.yaml file."
 > @echo "  * Set RESOLVER to specify a Stack resolver."
-> @echo "  * Set STACK_NIX_PATH to specify a Stack Nix path."
 .PHONY: help
 
 hlint: # run hlint on all Haskell source

@@ -1,31 +1,89 @@
 packages: ./redact.cabal
 
-with-compiler: ghc-8.2.2
+with-compiler: ghc-8.8.4
 
 constraints:
     -- https://hackage.haskell.org/package/ansi-terminal
-    ansi-terminal == 0.8.0.4
+    ansi-terminal == 0.10.3
+
+    -- https://hackage.haskell.org/package/array
+    -- GHC boot library
+    -- vendored dependency
+  , array == 0.5.4.0
 
     -- https://hackage.haskell.org/package/ansi-wl-pprint
-  , ansi-wl-pprint == 0.6.8.2
+  , ansi-wl-pprint == 0.6.9
 
     -- https://hackage.haskell.org/package/base
     -- GHC boot library
-  , base == 4.10.1.0
+  , base == 4.13.0.0
+
+    -- https://hackage.haskell.org/package/constraints
+    -- vendored dependency
+  , constraints == 0.12
+
+    -- https://hackage.haskell.org/package/containers
+    -- GHC boot library
+    -- vendored dependency
+  , containers == 0.6.2.1
+
+    -- https://hackage.haskell.org/package/data-default
+    -- vendored dependency
+  , data-default == 0.7.1.1
 
     -- https://hackage.haskell.org/package/directory
     -- GHC boot library
-  , directory == 1.3.0.2
+  , directory == 1.3.6.0
+
+    -- https://hackage.haskell.org/package/exceptions
+    -- GHC boot library
+    -- vendored dependency
+  , exceptions == 0.10.4
+
+    -- https://hackage.haskell.org/package/extra
+    -- vendored dependency
+  , extra == 1.7.9
+
+    -- https://hackage.haskell.org/package/monad-control
+    -- vendored dependency
+  , monad-control == 1.0.2.3
+
+    -- https://hackage.haskell.org/package/mtl
+    -- GHC boot library
+    -- vendored dependency
+  , mtl == 2.2.2
 
     -- https://hackage.haskell.org/package/optparse-applicative
-  , optparse-applicative == 0.13.0.0
+  , optparse-applicative == 0.15.1.0
+
+    -- https://hackage.haskell.org/package/stm
+    -- GHC boot library
+    -- vendored dependency
+  , stm == 2.5.0.0
+
+    -- https://hackage.haskell.org/package/syb
+    -- vendored dependency
+  , syb == 0.7.1
 
     -- https://hackage.haskell.org/package/tasty
-  , tasty == 0.12
+  , tasty == 1.2.3
 
     -- https://hackage.haskell.org/package/tasty-hunit
-  , tasty-hunit == 0.8
+  , tasty-hunit == 0.10.0.3
+
+    -- https://hackage.haskell.org/package/template-haskell
+    -- GHC boot library
+    -- vendored dependency
+  , template-haskell == 2.15.0.0
 
     -- https://hackage.haskell.org/package/text
-    -- (GHC boot library from GHC 8.4)
-  , text == 1.2.3.0
+    -- GHC boot library
+  , text == 1.2.4.0
+
+    -- https://hackage.haskell.org/package/transformers-base
+    -- vendored dependency
+  , transformers-base == 0.4.5.2
+
+    -- https://hackage.haskell.org/package/unliftio
+    -- vendored dependency
+  , unliftio == 0.2.13.1
