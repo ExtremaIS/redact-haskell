@@ -6,13 +6,13 @@ constraints:
     -- https://hackage.haskell.org/package/ansi-terminal
     ansi-terminal == 0.10.3
 
+    -- https://hackage.haskell.org/package/ansi-wl-pprint
+  , ansi-wl-pprint == 0.6.9
+
     -- https://hackage.haskell.org/package/array
     -- GHC boot library
     -- vendored dependency
   , array == 0.5.4.0
-
-    -- https://hackage.haskell.org/package/ansi-wl-pprint
-  , ansi-wl-pprint == 0.6.9
 
     -- https://hackage.haskell.org/package/base
     -- GHC boot library
