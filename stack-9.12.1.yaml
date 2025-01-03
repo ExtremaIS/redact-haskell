@@ -1,0 +1,35 @@
+resolver: ghc-9.12.1
+
+packages:
+  - .
+
+flags:
+  redact:
+    optparse-applicative_ge_0_18: true
+
+extra-deps:
+  - ansi-terminal-1.1.2
+  - ansi-terminal-types-1.1
+  - async-2.2.5
+  - base-orphans-0.9.3
+  - boring-0.2.2
+  - call-stack-0.4.0
+  - clock-0.8.4
+  - colour-2.3.6
+  - constraints-0.14.2
+  - data-default-0.8.0.0
+  - extra-1.8
+  - hashable-1.5.0.0
+  - monad-control-1.0.3.1
+  - optparse-applicative-0.18.1.0
+  - prettyprinter-1.7.1
+  - prettyprinter-ansi-terminal-1.1.3
+  - safe-exceptions-0.1.7.4
+  - syb-0.7.2.4
+  - tagged-0.8.9
+  - tasty-1.5.2
+  - tasty-hunit-0.10.2
+  - transformers-base-0.4.6
+  - transformers-compat-0.7.2
+  - unliftio-0.2.25.0
+  - unliftio-core-0.2.1.0

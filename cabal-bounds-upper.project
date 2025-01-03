@@ -1,6 +1,6 @@
 packages: ./redact.cabal
 
-with-compiler: ghc-9.10.1
+with-compiler: ghc-9.12.1
 
 constraints:
     -- https://hackage.haskell.org/package/ansi-terminal
@@ -9,11 +9,11 @@ constraints:
     -- https://hackage.haskell.org/package/array
     -- GHC boot library
     -- vendored dependency
-  , array == 0.5.7.0
+  , array == 0.5.8.0
 
     -- https://hackage.haskell.org/package/base
     -- GHC boot library
-  , base == 4.20.0.0
+  , base == 4.21.0.0
 
     -- https://hackage.haskell.org/package/constraints
     -- vendored dependency
@@ -30,12 +30,12 @@ constraints:
 
     -- https://hackage.haskell.org/package/directory
     -- GHC boot library
-  , directory == 1.3.8.3
+  , directory == 1.3.9.0
 
     -- https://hackage.haskell.org/package/exceptions
     -- GHC boot library
     -- vendored dependency
-  , exceptions == 0.10.7
+  , exceptions == 0.10.9
 
     -- https://hackage.haskell.org/package/extra
     -- vendored dependency
@@ -74,11 +74,11 @@ constraints:
     -- https://hackage.haskell.org/package/template-haskell
     -- GHC boot library
     -- vendored dependency
-  , template-haskell == 2.22.0.0
+  , template-haskell == 2.23.0.0
 
     -- https://hackage.haskell.org/package/text
     -- (GHC boot library from GHC 8.4)
-  , text == 2.1.1
+  , text == 2.1.2
 
     -- https://hackage.haskell.org/package/transformers-base
     -- vendored dependency
