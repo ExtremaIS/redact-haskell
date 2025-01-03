@@ -2,7 +2,7 @@
 -- |
 -- Module      : Redact.Monad.Handle
 -- Description : handle I/O
--- Copyright   : Copyright (c) 2020-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2020-2025 Travis Cardwell
 -- License     : MIT
 ------------------------------------------------------------------------------
 

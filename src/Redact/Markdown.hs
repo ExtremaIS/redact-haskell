@@ -2,7 +2,7 @@
 -- |
 -- Module      : Redact.Markdown
 -- Description : Markdown redaction
--- Copyright   : Copyright (c) 2020-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2020-2025 Travis Cardwell
 -- License     : MIT
 --
 -- Markdown inline code (text enclosed in backticks) is redacted.  This
