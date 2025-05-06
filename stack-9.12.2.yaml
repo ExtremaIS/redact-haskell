@@ -1,4 +1,4 @@
-resolver: ghc-9.12.1
+resolver: ghc-9.12.2
 
 packages:
   - .
@@ -17,7 +17,7 @@ extra-deps:
   - clock-0.8.4
   - colour-2.3.6
   - constraints-0.14.2
-  - data-default-0.8.0.0
+  - data-default-0.8.0.1
   - extra-1.8
   - hashable-1.5.0.0
   - monad-control-1.0.3.1
@@ -27,9 +27,9 @@ extra-deps:
   - safe-exceptions-0.1.7.4
   - syb-0.7.2.4
   - tagged-0.8.9
-  - tasty-1.5.2
+  - tasty-1.5.3
   - tasty-hunit-0.10.2
   - transformers-base-0.4.6
   - transformers-compat-0.7.2
-  - unliftio-0.2.25.0
+  - unliftio-0.2.25.1
   - unliftio-core-0.2.1.0
