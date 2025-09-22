@@ -4,7 +4,7 @@ with-compiler: ghc-9.12.2
 
 constraints:
     -- https://hackage.haskell.org/package/ansi-terminal
-    ansi-terminal == 1.1.2
+    ansi-terminal == 1.1.3
 
     -- https://hackage.haskell.org/package/array
     -- GHC boot library
