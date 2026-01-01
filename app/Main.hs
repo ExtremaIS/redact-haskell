@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : redact: hide secret text on the terminal
--- Copyright   : Copyright (c) 2020-2025 Travis Cardwell
+-- Copyright   : Copyright (c) 2020-2026 Travis Cardwell
 -- License     : MIT
 --
 -- See the README for details.

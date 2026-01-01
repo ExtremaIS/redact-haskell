@@ -2,7 +2,7 @@
 -- |
 -- Module      : Redact.Monad.Terminal
 -- Description : terminal output
--- Copyright   : Copyright (c) 2020-2025 Travis Cardwell
+-- Copyright   : Copyright (c) 2020-2026 Travis Cardwell
 -- License     : MIT
 ------------------------------------------------------------------------------
 
